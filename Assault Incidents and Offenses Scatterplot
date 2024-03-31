@@ -1,0 +1,30 @@
+library(ggplot2)
+require(ggplot2)
+install.packages("tidyr")
+library(tidyr)
+
+Assault_Incidents_and_Offenses
+
+# Reshape the data into long format
+Assault_Incidents_and_Offenses <- gather(Assault_Incidents_and_Offenses, key = "Incident_Type", value = "Number_of_Incidents", -Time)
+
+# Plot using ggplot
+assaultplot <- ggplot(Assault_Incidents_and_Offenses, aes(x = Time, y = Number_of_Incidents, color = Incident_Type, size = Number_of_Incidents)) +
+  geom_point() +
+  labs(title = "1991-2022 Assault Incidents and Offenses",
+       x = "Year",
+       y = "Number of Incidents and Offenses",
+       color = "Incident and Offense Type",
+       size = "Offense Intensity") +
+  scale_size_continuous(range = c(1, 3), guide = "none") +
+  scale_color_manual(values = c("Aggravated Assault Incidents" = "blue", 
+                                "Simple Assault Incidents" = "green", 
+                                "Intimidation Incidents" = "red",
+                                "Aggravated Assault Offenses" = "blue",
+                                "Simple Assault Offenses" = "green",
+                                "Intimidation Offenses" = "red")) +
+  theme_minimal() +
+  theme(aspect.ratio = 1/1) 
+
+# Print plot
+assaultplot
