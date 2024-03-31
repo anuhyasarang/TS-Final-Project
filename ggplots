@@ -1,0 +1,33 @@
+#GGPLOTS 
+
+library(readxl)
+library(tidyverse)
+library(ggplot2)
+library(lubridate)
+library(zoo)
+require(zoo)
+
+library(readxl)
+ddv <- read_excel("C:/Users/anuhy/Downloads/Destruction of Property Incidents and Offenses.xlsx")
+View(ddv)
+
+
+library(readxl)
+assaultIntimidation <- read_excel("C:/Users/anuhy/Downloads/Assault Incidents and Offenses.xlsx")
+View(assaultIntimidation)
+
+
+ddvm <- melt(ddv[,c('Time', 'destructionDamageVandalismIncidents', 'destructionDamageVandalismOffenses')], id.vars = 1)
+
+ggplot(ddvm,aes(x = Time,y = value)) + 
+  geom_bar(aes(fill = variable),stat = "identity", position = "dodge")
+
+
+assaultIntimidationM <- melt(assaultIntimidation[,c('Time', 'aggravatedAssaultIncidents', 'simpleAssaultIncidents',
+                                                    'intimidationIncidents', 'aggravatedAssaultOffenses',
+                                                    'simpleAssaultOffenses', 'intimidationOffenses')], id.vars = 1)
+
+ggplot(assaultIntimidationM,aes(x = Time,y = value)) + 
+  geom_bar(aes(fill = variable),stat = "identity", position = "dodge")
+
+
