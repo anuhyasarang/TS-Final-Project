@@ -1,0 +1,14 @@
+Assault_Incidents_and_Offenses <- na.omit(Assault_Incidents_and_Offenses)
+
+# Combine x-columns into one dataframe
+Assault_Incidents_and_Offenses <- data.frame(
+  y = c(Assault_Incidents_and_Offenses$`Aggravated Assault Incidents`, Assault_Incidents_and_Offenses$`Simple Assault Incidents`, Assault_Incidents_and_Offenses$`Intimidation Incidents`),
+  x = rep(Assault_Incidents_and_Offenses$Time, 3),
+  variable = rep(c("Aggravated Incidents", "Simple Incidents", "Intimidation Incidents"), each = nrow(Assault_Incidents_and_Offenses))
+)
+
+# Create combined scatterplot
+ggplot(Assault_Incidents_and_Offenses, aes(x = x, y = y, color = variable)) +
+  geom_point() +
+  labs(title = "Combined Aggravated Assaults", x = "Incidents", y = "Year", color = "Incidents") +
+  theme_minimal()
