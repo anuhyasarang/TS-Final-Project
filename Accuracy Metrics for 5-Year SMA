@@ -1,0 +1,30 @@
+calculate_metrics <- function(assaultHateCrimes, aggregatedAssaultIncidents, SMA) {
+ 
+   # Extract actual and predicted values from the dataset
+  actual <- assaultHateCrimes[[aggregatedAssaultIncidents]]
+  predicted <- assaultHateCrimes[[SMA]]
+  
+  # Calculate residuals
+  residuals <- actual - predicted
+  
+  # Calculate RMSE (Root Mean Squared Error)
+  rmse <- sqrt(mean(residuals^2))
+  
+  # Calculate MAE (Mean Absolute Error)
+  mae <- mean(abs(residuals))
+  
+  # Return a named list of metrics
+  return(list(RMSE = rmse, MAE = mae))
+}
+
+# Dataset frame
+assaultHateCrimes <- data.frame(
+  actual = c(21, 29, 41, 30, 49, 54, 36, 47, 40, 51, 30, 29, 37, 28, 48, 65, 82, 118, 86, 87),  # Actual values
+  sma_predictions = c(26.2, 26, 29, 29.2, 34, 40.6, 42, 43.2, 45.2, 45.6, 40.8, 39.4, 37.4, 35, 34.4, 41.4, 52, 68.2, 79.8, 87.6)  # SMA predictions
+)
+
+# Calculate metrics using the custom function
+metrics <- calculate_metrics(assaultHateCrimes, "actual", "sma_predictions")
+
+# Print the metrics
+print(metrics)
