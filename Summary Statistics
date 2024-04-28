@@ -1,0 +1,25 @@
+# Load necessary packages 
+install.packages(c("tseries", "zoo")) 
+library(tseries) 
+library(zoo) 
+
+# Load lh dataset (already stationary) 
+data("Assaults") 
+
+# 1. Visual Inspection 
+plot(Assaults, main = "Assaults") 
+
+# 2. Summary Statistics 
+summary(Assaults$aggregatedAssaultIncidents) 
+
+#convert to ts object
+# Assuming your dataset is named 'my_data' and it contains a column named 'Assault_Incidents_and_Offenses'
+# You'll need to adjust this code based on your actual dataset structure
+
+# Convert your data to a time series object
+ts_data <- ts(Assaults$aggregatedAssaultIncidents,start = 1991, frequency = 12)
+
+data_matrix <- as.matrix(Assaults[, c("aggregatedAssaultIncidents")])
+
+# Convert the matrix to a time series object
+ts_data <- ts(data_matrix, start = 1, frequency = 12)
