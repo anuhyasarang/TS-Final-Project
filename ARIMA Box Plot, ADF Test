@@ -1,0 +1,81 @@
+str(Assaults)
+
+# Convert to a time series object using ts() function
+Assault_ts <- ts(Assaults$aggregatedAssaultIncidents, start = c(1991), frequency = 12)
+
+# Convert to a time series object using ts() function
+Assault_ts <- ts(Assaults$aggregatedAssaultIncidents, start = c(1991), frequency = 12)
+
+# Replace missing values with 0
+Assaults$aggregatedAssaultIncidents[is.na(Assaults$aggregatedAssaultIncidents)] <- 0
+
+# Perform the ADF test
+adf_result <- adf.test(Assaults$aggregatedAssaultIncidents)
+
+# 4. Augmented Dickey-Fuller (ADF) Test - Aggravated Assaults Total
+adf_test <- adf.test(Assaults$aggregatedAssaultIncidents) 
+print("ADF Test:") 
+print(adf_test)
+
+# Assuming adf_result contains the result of the ADF test
+adf_result <- adf.test(Assaults$aggregatedAssaultIncidents)
+
+# Print the results
+print(adf_result)
+
+# Extract the test statistic and p-value
+test_statistic <- adf_result$statistic
+p_value <- adf_result$p.value
+
+# Compare with critical values and significance level
+critical_values <- adf_result$critical
+significance_level <- 0.05
+
+# Determine if the series is stationary or not
+if (abs(test_statistic) > critical_values$'1%' && p_value < significance_level) {
+  print("The series is stationary.")
+} else {
+  print("The series is non-stationary.")
+}
+
+#SAIncident ADF test
+# Assuming adf_result contains the result of the ADF test
+adf_result <- adf.test(Assault_ds$SAIncident)
+
+# Print the results
+print(adf_result)
+
+# Extract the test statistic and p-value
+test_statistic <- adf_result$statistic
+p_value <- adf_result$p.value
+
+# Compare with critical values and significance level
+critical_values <- adf_result$critical
+significance_level <- 0.05
+
+# Determine if the series is stationary or not
+if (abs(test_statistic) > critical_values$'1%' && p_value < significance_level) {
+  print("The series is stationary.")
+} else {
+  print("The series is non-stationary.")
+}
+
+# ARIMA Box plot
+# Load necessary libraries
+# Load necessary libraries
+library(forecast)
+
+# Generate or load your time series data
+# For example, let's say your time series data is stored in a vector called 'ts_data'
+
+# Fit an ARIMA model to your time series data
+arima_model <- auto.arima(ts_data)
+
+# Extract residuals from the ARIMA model
+residuals <- residuals(arima_model)
+
+# Open a new plotting device with larger margins
+dev.new(width = 10, height = 6)  # Adjust width and height as needed
+
+# Create a box plot of the residuals
+boxplot(residuals, main = "Box Plot of ARIMA Residuals", ylab = "Residuals")
