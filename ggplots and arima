@@ -1,0 +1,101 @@
+#GGPlots
+#New Data
+
+library(ggplot2)
+library(tidyverse)
+library(lubridate)
+library(readxl)
+library(zoo)
+require(TTR)
+require(tseries)
+library(urca)
+#Import Assault Hate Crime Data
+
+library(readxl)
+assaultHateCrimes <- read_excel("C:/Users/anuhy/OneDrive/Documents/assaultHateCrimes.xlsx")
+View(assaultHateCrimes)
+
+myts <- ts(assaultHateCrimes$aggregatedAssaultIncidents, start = 1991,
+               frequency = 1)
+print(myts)
+plot(mycounts, ylab = "aggregatedAssaultIncidents",xlab = "Time")
+
+ggplot(assaultHateCrimes,aes(x = Time,y = aggregatedAssaultIncidents)) + 
+  geom_bar(stat = "identity", position = "dodge")
+
+ggplot(assaultHateCrimes,aes(x = Time,y = aggregatedAssaultIncidents)) + 
+  geom_point()    
+
+library(readxl)
+ddv <- read_excel("C:/Users/anuhy/Downloads/ddv.xlsx")
+View(ddv)
+mycounts <- ts(ddv$ddvIncidents, start = 1991,
+               frequency = 1)
+print(mycounts)
+ggplot(ddv,aes(x = Time,y = ddvIncidents)) + 
+  geom_bar(stat = "identity", position = "dodge")
+
+ggplot(ddv,aes(x = Time,y = ddvIncidents)) + 
+  geom_point()
+
+
+### ARIMA MODEL
+### no trend and no seasonality
+library(tseries)
+library(forecast)
+
+#Make Non Stationary Data Stationary
+aggregatedAssaultIncidentsClean <- na.omit(assaultHateCrimes$aggregatedAssaultIncidents)
+
+aggregatedAssaultIncidentsDiff = diff(log(assaultHateCrimes$aggregatedAssaultIncidents))
+
+plot.ts(aggregatedAssaultIncidentsDiff)
+aggregatedAssaultIncidentsDiff <- na.omit(aggregatedAssaultIncidentsDiff)
+
+adf.test(aggregatedAssaultIncidentsDiff)
+#After differencing, conducting ADF test confirms data is now stationary
+
+###Apply auto.arima to best fit ARIMA model
+auto.arima(aggregatedAssaultIncidentsDiff)
+#This returns ARIMA(1,0,0) as best fit model
+#Lag: 1, stationary at level and residual lag of 0(first-order auto regressive model)
+
+###Create Model
+modelAggregatedAssaultIncidentsDiff = arima(aggregatedAssaultIncidentsDiff, order = c(1,0,0))
+modelAggregatedAssaultIncidentsDiff
+
+
+#Write Equation
+#aggregatedAssaultIncidentsDiff = 0.0275 + (-0.4674) * aggregatedAssaultIncidentsDiff 
+
+
+###Diagnostic check options
+
+#autoplot(acf((aggregatedAssaultIncidentsDiff),lag = 12))
+
+
+#Check Residuals: Correlation
+residuals <- residuals(modelAggregatedAssaultIncidentsDiff)
+dev.new(width = 10, height = 6) 
+boxplot(residuals, main = 'ARIMA Residual Box Plot', ylab = "Residuals")
+acf(residuals)
+plot.ts(residuals)
+
+#Check if residuals are normally distributed
+gghistogram(residuals)
+Box.test(residuals, lag = 12, type = c("Box-Pierce", "Ljung-Box"), fitdf = 0)
+#H0 = Residuals follow IID
+
+###forecast series
+forecastAggregatedAssaultIncidents = forecast(modelAggregatedAssaultIncidentsDiff,h = 5)
+forecastAggregatedAssaultIncidents
+plot(forecastAggregatedAssaultIncidents)
+###Accuracy Metrics
+accuracy(modelAggregatedAssaultIncidentsDiff)
+
+
+
+
+
+
+
