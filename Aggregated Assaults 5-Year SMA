@@ -1,0 +1,21 @@
+# Convert Time column to numeric
+assaultHateCrimes$Time <- as.numeric(assaultHateCrimes$Time)
+
+# Convert aggregatedAssaultIncidents and SMA columns to numeric
+assaultHateCrimes$aggregatedAssaultIncidents <- as.numeric(assaultHateCrimes$aggregatedAssaultIncidents)
+assaultHateCrimes$SMA <- as.numeric(assaultHateCrimes$SMA)
+
+# Calculate simple moving average for a specific variable over a specified number of years
+window_size_years <- 5  # Adjust this to the desired number of years
+assaultHateCrimes$SMA <- rollapply(assaultHateCrimes$aggregatedAssaultIncidents, width = window_size_years, FUN = mean, align = "right", fill = NA)
+
+# Plot the data
+ggplot(assaultHateCrimes, aes(x = Time)) +
+  geom_line(data = na.omit(assaultHateCrimes), aes(y = aggregatedAssaultIncidents, color = "Aggregated Assault Incidents"), size = 1) +
+  geom_line(data = na.omit(assaultHateCrimes), aes(y = SMA, color = "Simple Moving Average"), size = 1) +
+  labs(title = "Aggregated Assault Incidents SMA",
+       x = "Time",
+       y = "Aggregated Assault Incidents",
+       color = "") +
+  scale_color_manual(values = c("Aggregated Assault Incidents" = "blue", "Simple Moving Average" = "red")) +
+  theme_minimal()
