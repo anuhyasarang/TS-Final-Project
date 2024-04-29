@@ -1,0 +1,145 @@
+###Time Series Final Project Compiled
+
+library(ggplot2)
+library(tidyverse)
+library(lubridate)
+library(readxl)
+library(zoo)
+require(TTR)
+require(tseries)
+library(urca)
+#Import Assault Hate Crime Data
+
+library(readxl)
+assaultHateCrimes <- read_excel("C:/Users/anuhy/OneDrive/Documents/assaultHateCrimes.xlsx")
+View(assaultHateCrimes)
+
+myts <- ts(assaultHateCrimes$aggregatedAssaultIncidents, start = 1991,
+           frequency = 1)
+print(myts)
+plot(mycounts, ylab = "aggregatedAssaultIncidents",xlab = "Time")
+
+ggplot(assaultHateCrimes,aes(x = Time,y = aggregatedAssaultIncidents)) + 
+  geom_bar(stat = "identity", position = "dodge")
+
+ggplot(assaultHateCrimes,aes(x = Time,y = aggregatedAssaultIncidents)) + 
+  geom_point()  
+
+#ScatterPlots 
+data_matrix <- as.matrix(assaultHateCrimes[, c("aggregatedAssaultIncidents")])
+# Convert the matrix to a time series object
+ts_data <- ts(data_matrix, start = 1, frequency = 1)
+
+
+#Aggregated Assault Single Moving Average
+# Convert Time column to numeric
+assaultHateCrimes$Time <- as.numeric(assaultHateCrimes$Time)
+
+# Convert aggregatedAssaultIncidents and SMA columns to numeric
+
+assaultHateCrimes$aggregatedAssaultIncidents <- as.numeric(assaultHateCrimes$aggregatedAssaultIncidents)
+assaultHateCrimes$SMA <- as.numeric(assaultHateCrimes$SMA)
+
+# Calculate simple moving average for a specific variable over a specified number of years
+window_size_years <- 5  # Adjust this to the desired number of years
+assaultHateCrimes$SMA <- rollapply(assaultHateCrimes$aggregatedAssaultIncidents, width = window_size_years, FUN = mean, align = "right", fill = NA)
+
+# Plot the data
+ggplot(assaultHateCrimes, aes(x = Time)) +
+  geom_line(data = na.omit(assaultHateCrimes), aes(y = aggregatedAssaultIncidents, color = "Aggregated Assault Incidents"), size = 1) +
+  geom_line(data = na.omit(assaultHateCrimes), aes(y = SMA, color = "Simple Moving Average"), size = 1) +
+  labs(title = "Aggregated Assault Incidents SMA",
+       x = "Time",
+       y = "Aggregated Assault Incidents",
+       color = "") +
+  scale_color_manual(values = c("Aggregated Assault Incidents" = "blue", "Simple Moving Average" = "red")) +
+  theme_minimal()
+
+
+calculate_metrics <- function(assaultHateCrimes, aggregatedAssaultIncidents, SMA) {
+  
+  # Extract actual and predicted values from the dataset
+  actual <- assaultHateCrimes[[aggregatedAssaultIncidents]]
+  predicted <- assaultHateCrimes[[SMA]]
+  
+  # Calculate residuals
+  residuals <- actual - predicted
+  
+  # Calculate RMSE (Root Mean Squared Error)
+  rmse <- sqrt(mean(residuals^2))
+  
+  # Calculate MAE (Mean Absolute Error)
+  mae <- mean(abs(residuals))
+  
+  # Return a named list of metrics
+  return(list(RMSE = rmse, MAE = mae))
+}
+
+# Dataset frame
+assaultHateCrimes <- data.frame(
+  actual = c(21, 29, 41, 30, 49, 54, 36, 47, 40, 51, 30, 29, 37, 28, 48, 65, 82, 118, 86, 87),  # Actual values
+  sma_predictions = c(26.2, 26, 29, 29.2, 34, 40.6, 42, 43.2, 45.2, 45.6, 40.8, 39.4, 37.4, 35, 34.4, 41.4, 52, 68.2, 79.8, 87.6)  # SMA predictions
+)
+
+# Calculate metrics using the custom function
+metrics <- calculate_metrics(assaultHateCrimes, "actual", "sma_predictions")
+
+# Print the metrics
+print(metrics)
+
+
+
+### ARIMA MODEL
+### no trend and no seasonality
+library(tseries)
+library(forecast)
+
+#Make Non Stationary Data Stationary
+aggregatedAssaultIncidentsClean <- na.omit(assaultHateCrimes$aggregatedAssaultIncidents)
+
+aggregatedAssaultIncidentsDiff = diff(log(assaultHateCrimes$aggregatedAssaultIncidents))
+
+plot.ts(aggregatedAssaultIncidentsDiff)
+aggregatedAssaultIncidentsDiff <- na.omit(aggregatedAssaultIncidentsDiff)
+
+adf.test(aggregatedAssaultIncidentsDiff)
+#After differencing, conducting ADF test confirms data is now stationary
+
+###Apply auto.arima to best fit ARIMA model
+auto.arima(aggregatedAssaultIncidentsDiff)
+#This returns ARIMA(1,0,0) as best fit model
+#Lag: 1, stationary at level and residual lag of 0(first-order auto regressive model)
+
+###Create Model
+modelAggregatedAssaultIncidentsDiff = arima(aggregatedAssaultIncidentsDiff, order = c(1,0,0))
+modelAggregatedAssaultIncidentsDiff
+
+
+###Diagnostic check options
+
+#autoplot(acf((aggregatedAssaultIncidentsDiff),lag = 12))
+
+
+#Check Residuals: Correlation
+residuals <- residuals(modelAggregatedAssaultIncidentsDiff)
+dev.new(width = 10, height = 6) 
+boxplot(residuals, main = 'ARIMA Residual Box Plot', ylab = "Residuals")
+acf(residuals)
+plot.ts(residuals)
+
+#Check if residuals are normally distributed
+gghistogram(residuals)
+Box.test(residuals, lag = 12, type = c("Box-Pierce", "Ljung-Box"), fitdf = 0)
+#H0 = Residuals follow IID
+
+###forecast series
+forecastAggregatedAssaultIncidents = forecast(modelAggregatedAssaultIncidentsDiff,h = 5)
+forecastAggregatedAssaultIncidents
+plot(forecastAggregatedAssaultIncidents)
+###Accuracy Metrics
+accuracy(modelAggregatedAssaultIncidentsDiff)
+
+
+
+
+
