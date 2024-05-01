@@ -1,0 +1,72 @@
+
+#### Homework 4 Question 4
+#Anuhya Sarang
+
+library(ggplot2)
+library(forecast)
+library(zoo)
+library(tseries)
+library(lubridate)
+
+
+library(readxl)
+aue <- read_excel("C:/Users/anuhy/Downloads/aus_production.xlsx")
+View(aue)
+
+ggplot(aue, aes(yq(Quarter), Electricity, group = 1)) +
+  geom_line()+
+  xlab("Quarterly Data")+
+  ylab("Electric production")
+#Answer 4A: the plot of this data shows a trend, and a general increase in 
+#variation with the level of the series, thus this data needs transforming. 
+
+myts <- ts(aue$Electricity, start = 1956, frequency = 4)
+plot(myts)
+
+aue <- na.omit(aue)
+aueDiff <- diff(log(myts))
+plot.ts(aueDiff)
+adf.test(aueDiff)
+
+adf.test(aue$Electricity)
+#Answer 4B: the ADF test after taking the log of the time series data concludes that 
+#our data is stationary, with a p value of 0.01. ADF test of the original data
+#also shows that the data is stationary
+
+#Answer 4C: In order to determine an ARIMA model that may fit this data, we use
+#auto.arima. 
+auto.arima(aueDiff)
+#This returns ARIMA(1,0,1)(2,1,1)[4], or seasonal arima.
+#(1,0,1) indicates one autoregressive term, no differencing, and one moving average term
+#(2,1,1) indicates 2 seasonal autoregressive terms, degree of seasonal differencing = 1, and 1 MA term
+#The 4 indicates quarterly seasonality
+
+#Create Seasonal Arima Model
+library(forecast)
+modelAue = arima(myts, order = c(1,0,1), seasonal = c(2,1,1), period = 4, include.drift = 'true')
+modelAue
+
+
+#Diagnostic Checks:
+
+aueResiduals = residuals(modelAue)
+acf(aueResiduals)
+pacf(aueResiduals)
+plot.ts(aueResiduals)
+gghistogram(aueResiduals)
+#ACF and PACF plot of residuals show that they are within the bounds, thus there is little autocorrelation 
+#and the residuals resemble white noise.
+#Histogram shows a bell curve, thus the residuals are normally distributed
+#Mean of residuals is zero, thus the forecast is unbiased.
+
+#Now, we forecast for the next 24 months
+forecastAue = forecast(modelAue, h = 24)
+forecastAue
+plot(forecastAue)
+
+#Accuracy Metrics
+tail(modelAue)
+accuracy(modelAue)
+#The accuracy metrics show low values for ME, RMSE, MAE, and MASE< indicating that
+#the forecast is unbiased, and absolute error is low. Thus, this 
+#ARIMA model is well fitted to this data. 
